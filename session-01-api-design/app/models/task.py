@@ -10,27 +10,27 @@ import enum
 
 
 class TaskStatus(str, enum.Enum):
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    IN_REVIEW = "in_review"
-    DONE = "done"
-    CANCELLED = "cancelled"
+    TODO = "TODO"
+    IN_PROGRESS = "IN_PROGRESS"
+    IN_REVIEW = "IN_REVIEW"
+    DONE = "DONE"
+    CANCELLED = "CANCELLED"
 
 
 class TaskPriority(str, enum.Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    URGENT = "urgent"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    URGENT = "URGENT"
 
 
 class Task(Base):
     __tablename__ = "task"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), nullable=False)
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True)
-    assigned_by = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE"))
+    assigned_to = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    assigned_by = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
     title = Column(String(255), nullable=False)
     description = Column(String(2000), nullable=True)
     priority = Column(Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM)

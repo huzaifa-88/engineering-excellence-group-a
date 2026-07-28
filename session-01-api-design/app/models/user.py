@@ -36,6 +36,8 @@ class User(Base):
     project_memberships = relationship(
         "ProjectMember",
         back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     def __repr__(self) -> str:

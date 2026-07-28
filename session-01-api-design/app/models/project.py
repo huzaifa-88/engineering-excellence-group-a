@@ -10,9 +10,9 @@ from app.db.base import Base
 
 
 class ProjectStatus(str, enum.Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    ARCHIVED = "archived"
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    ARCHIVED = "ARCHIVED"
 
 
 class Project(Base):
@@ -23,7 +23,7 @@ class Project(Base):
     description = Column(String(1000), nullable=True)
     status = Column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE)
     deadline = Column(DateTime, nullable=True)
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     # Relationships
     owner = relationship(
@@ -34,10 +34,14 @@ class Project(Base):
     tasks = relationship(
         "Task",
         back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     members = relationship(
         "ProjectMember",
         back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     def __repr__(self) -> str:

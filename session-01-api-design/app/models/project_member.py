@@ -9,8 +9,8 @@ from app.db.base import Base
 class ProjectMember(Base):
     __tablename__ = "project_member"
 
-    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id"), primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), primary_key=True)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
     member_role = Column(String(50), nullable=False, default="member")
 
     __table_args__ = (
