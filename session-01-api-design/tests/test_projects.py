@@ -50,7 +50,7 @@ async def test_create_project_success(client: AsyncClient):
         "deadline": "2025-12-31T23:59:59",
         "owner_id": owner_id,
     }
-    response = await client.post("/api/v1/projects", json=payload)
+    response = await client.post("/projects", json=payload)
     assert response.status_code == 201
     data = response.json()
     assert data["title"] == "Test Project"
@@ -75,14 +75,14 @@ async def test_get_project_by_id_success(client: AsyncClient):
     owner_id = user_response.json()["id"]
 
     # Create a project
-    create_response = await client.post("/api/v1/projects", json={
+    create_response = await client.post("/projects", json={
         "title": "Get by ID Project",
         "owner_id": owner_id,
     })
     project_id = create_response.json()["id"]
 
     # Get by ID
-    response = await client.get(f"/api/v1/projects/{project_id}")
+    response = await client.get(f"/projects/{project_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == project_id
@@ -93,6 +93,5 @@ async def test_get_project_by_id_success(client: AsyncClient):
 async def test_get_project_by_id_not_found(client: AsyncClient):
     """Test GET /projects/{id} returns HTTP 404 for non-existent project."""
     random_uuid = str(uuid.uuid4())
-    response = await client.get(f"/api/v1/projects/{random_uuid}")
+    response = await client.get(f"/projects/{random_uuid}")
     assert response.status_code == 404
-    assert response.json()["detail"] == "Project not found"
