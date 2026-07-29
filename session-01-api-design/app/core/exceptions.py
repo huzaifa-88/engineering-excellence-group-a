@@ -59,3 +59,33 @@ class ProjectNotFoundError(HTTPException):
                 }
             },
         )
+
+
+class TaskNotFoundError(HTTPException):
+    """Raised when a requested task cannot be found by ID."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": {
+                    "code": "TASK_NOT_FOUND",
+                    "message": "Task not found",
+                }
+            },
+        )
+
+
+class AssigneeNotFoundError(HTTPException):
+    """Raised when a referenced assignee cannot be found by ID."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": {
+                    "code": "ASSIGNEE_NOT_FOUND",
+                    "message": "Assignee not found",
+                }
+            },
+        )
