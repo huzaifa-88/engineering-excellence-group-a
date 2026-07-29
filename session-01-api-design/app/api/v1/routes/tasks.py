@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies.deps import PaginationParams, get_db
+from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.schemas.task import (
     TaskCreate,
     TaskListResponse,
@@ -29,7 +27,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 )
 async def create_task(
     payload: TaskCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     response: Response,
 ) -> TaskResponse:
     """POST /tasks - Create a new task."""
@@ -46,7 +44,7 @@ async def create_task(
     description="Paginated task list with optional status, priority, project, and assignee filters.",
 )
 async def list_tasks(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     pagination: PaginationParams = Depends(),
     status_filter: TaskStatusValue | None = Query(
         default=None,
@@ -87,7 +85,7 @@ async def list_tasks(
 )
 async def get_task(
     task_id: UUID,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> TaskResponse:
     """GET /tasks/{task_id} - Retrieve one task."""
     task = await TaskService.get_task(db, task_id)
@@ -104,7 +102,7 @@ async def get_task(
 async def update_task_status(
     task_id: UUID,
     payload: TaskStatusUpdate,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> TaskResponse:
     """PATCH /tasks/{task_id}/status - Update task status."""
     task = await TaskService.update_task_status(db, task_id, payload)

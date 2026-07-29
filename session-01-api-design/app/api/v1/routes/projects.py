@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies.deps import PaginationParams, get_db
+from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.models.project import ProjectStatus
 from app.schemas.project import ProjectCreate, ProjectListResponse, ProjectResponse
 from app.services.project_service import ProjectService
@@ -25,7 +23,7 @@ router = APIRouter(
 )
 async def create_project(
     payload: ProjectCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> ProjectResponse:
     """POST /projects - Create a new project."""
     project = await ProjectService.create_project(db, payload)
@@ -40,7 +38,7 @@ async def create_project(
     description="Retrieve a paginated list of projects with optional filters.",
 )
 async def list_projects(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     pagination: PaginationParams = Depends(),
     project_status: ProjectStatus | None = Query(None, description="Filter by status"),
     owner_id: UUID | None = Query(None, description="Filter by owner ID"),
@@ -71,7 +69,7 @@ async def list_projects(
 )
 async def get_project(
     project_id: UUID,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> ProjectResponse:
     """GET /projects/{project_id} - Retrieve project by UUID."""
     project = await ProjectService.get_project(db, project_id)

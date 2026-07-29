@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, Response, status
 
-from app.api.dependencies.deps import get_db
+from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.schemas.user import UserCreate, UserListResponse, UserResponse
 from app.services.user_service import UserService
 
@@ -22,7 +20,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 )
 async def create_user(
     payload: UserCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     response: Response,
 ) -> UserResponse:
     """POST /users - Create a new user."""
@@ -39,17 +37,17 @@ async def create_user(
     description="Retrieve a paginated list of users.",
 )
 async def get_users(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    limit: int = Query(default=10, ge=1, le=100, description="Items per page"),
-    offset: int = Query(default=0, ge=0, description="Offset starting position"),
+    db: SessionDep,
+    pagination: PaginationParams = Depends(),
 ) -> UserListResponse:
     """GET /users - Paginated user list."""
-    page = (offset // limit) + 1 if limit > 0 else 1
-    users, total = await UserService.get_users(db, limit=limit, offset=offset)
+    users, total = await UserService.get_users(
+        db, limit=pagination.limit, offset=pagination.offset
+    )
     return UserListResponse(
         items=[UserResponse.model_validate(u) for u in users],
-        page=page,
-        page_size=limit,
+        page=pagination.page,
+        page_size=pagination.page_size,
         total=total,
     )
 
@@ -63,7 +61,7 @@ async def get_users(
 )
 async def get_user(
     user_id: UUID,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> UserResponse:
     """GET /users/{user_id} - Retrieve user by UUID."""
     user = await UserService.get_user(db, user_id)

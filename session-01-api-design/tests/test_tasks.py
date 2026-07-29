@@ -52,7 +52,7 @@ async def _create_project(client: AsyncClient, owner_id: str) -> str:
         "description": "Project used for task endpoint tests",
         "owner_id": owner_id,
     }
-    response = await client.post("/api/v1/projects", json=payload)
+    response = await client.post("/projects", json=payload)
     assert response.status_code == 201
     return response.json()["id"]
 
