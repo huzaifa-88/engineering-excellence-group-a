@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.project import Project
+from app.models.project import Project, ProjectStatus
 
 
 class ProjectRepository:
@@ -22,14 +22,14 @@ class ProjectRepository:
         *,
         limit: int = 10,
         offset: int = 0,
-        status: str | None = None,
+        project_status: ProjectStatus | None = None,
         owner_id: UUID | None = None,
     ) -> tuple[list[Project], int]:
         """Fetch paginated list of projects with optional filters."""
         query = select(Project)
 
-        if status:
-            query = query.where(Project.status == status)
+        if project_status:
+            query = query.where(Project.status == project_status)
 
         if owner_id:
             query = query.where(Project.owner_id == owner_id)

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies.deps import SessionDep, PaginationParams
+from app.api.dependencies.deps import PaginationParams, get_db
 from app.models.project import ProjectStatus
 from app.schemas.project import ProjectCreate, ProjectListResponse, ProjectResponse
 from app.services.project_service import ProjectService
@@ -23,40 +25,37 @@ router = APIRouter(
 )
 async def create_project(
     payload: ProjectCreate,
-    session: SessionDep,
-):
-    """
-    Create a new project with the provided details.
-    """
-    project = await ProjectService.create_project(session, payload)
-
-    return project
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ProjectResponse:
+    """POST /projects - Create a new project."""
+    project = await ProjectService.create_project(db, payload)
+    return ProjectResponse.model_validate(project)
 
 
 @router.get(
     "",
     response_model=ProjectListResponse,
+    status_code=status.HTTP_200_OK,
     summary="List all projects",
+    description="Retrieve a paginated list of projects with optional filters.",
 )
 async def list_projects(
+    db: Annotated[AsyncSession, Depends(get_db)],
     pagination: PaginationParams = Depends(),
-    status: ProjectStatus | None = Query(None, description="Filter by status"),
+    project_status: ProjectStatus | None = Query(None, description="Filter by status"),
     owner_id: UUID | None = Query(None, description="Filter by owner ID"),
-    session: SessionDep = None, # type checker trick, injected by FastAPI
-):
-    """
-    Retrieve a paginated list of projects. Optional filters by status and owner_id can be applied.
-    """
+) -> ProjectListResponse:
+    """GET /projects - Paginated project list with optional filters."""
     projects, total = await ProjectService.get_projects(
-        session,
+        db,
         page=pagination.page,
         page_size=pagination.page_size,
-        status=status,
+        project_status=project_status,
         owner_id=owner_id,
     )
 
     return ProjectListResponse(
-        items=projects,
+        items=[ProjectResponse.model_validate(p) for p in projects],
         page=pagination.page,
         page_size=pagination.page_size,
         total=total,
@@ -66,21 +65,14 @@ async def list_projects(
 @router.get(
     "/{project_id}",
     response_model=ProjectResponse,
+    status_code=status.HTTP_200_OK,
     summary="Get project by ID",
+    description="Fetch details for a specific project by UUID.",
 )
 async def get_project(
     project_id: UUID,
-    session: SessionDep,
-):
-    """
-    Retrieve a specific project by its ID.
-    """
-    project = await ProjectService.get_project(session, project_id)
-
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found",
-        )
-
-    return project
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ProjectResponse:
+    """GET /projects/{project_id} - Retrieve project by UUID."""
+    project = await ProjectService.get_project(db, project_id)
+    return ProjectResponse.model_validate(project)

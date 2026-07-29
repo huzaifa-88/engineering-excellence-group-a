@@ -44,3 +44,18 @@ class UserNotFoundError(HTTPException):
                 }
             },
         )
+
+
+class ProjectNotFoundError(HTTPException):
+    """Raised when a requested project cannot be found by ID."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": {
+                    "code": "PROJECT_NOT_FOUND",
+                    "message": "Project not found",
+                }
+            },
+        )
