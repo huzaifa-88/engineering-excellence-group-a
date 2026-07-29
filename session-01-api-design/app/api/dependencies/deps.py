@@ -14,9 +14,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-# Optional alias if your routes are using it
-SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
-
 
 class PaginationParams:
     def __init__(
