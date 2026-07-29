@@ -37,6 +37,13 @@ class Task(Base):
     status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TODO)
     estimated_time = Column(Integer, nullable=True)  # in hours
     deadline = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
 
     # Relationships
     project = relationship(
