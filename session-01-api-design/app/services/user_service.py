@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -17,7 +18,7 @@ from app.schemas.user import UserCreate
 def _hash_password(password: str) -> str:
     """Hash password securely using SHA-256 with salt."""
     salt = "taskflow_salt_v1"
-    return hashlib.sha256(f"{password}{salt}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{password}{salt}".encode()).hexdigest()
 
 
 class UserService:

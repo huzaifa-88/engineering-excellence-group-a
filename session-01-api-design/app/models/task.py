@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, DateTime, String, UUID, Enum, ForeignKey, Integer
+
+from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
-import enum
 
 
-class TaskStatus(str, enum.Enum):
+class TaskStatus(enum.StrEnum):
     TODO = "TODO"
     IN_PROGRESS = "IN_PROGRESS"
     IN_REVIEW = "IN_REVIEW"
@@ -17,7 +18,7 @@ class TaskStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
 
 
-class TaskPriority(str, enum.Enum):
+class TaskPriority(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -28,9 +29,15 @@ class Task(Base):
     __tablename__ = "task"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE"))
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
-    assigned_by = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    project_id = Column(
+        UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE")
+    )
+    assigned_to = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    assigned_by = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
     title = Column(String(255), nullable=False)
     description = Column(String(2000), nullable=True)
     priority = Column(Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM)
