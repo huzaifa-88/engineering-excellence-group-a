@@ -1,31 +1,37 @@
 import uuid
+
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.main import app
 from app.api.dependencies.deps import get_db
 from app.core.config import settings
+from app.main import app
 
 
 @pytest_asyncio.fixture
 async def client():
     """Simple fixture to provide an async HTTP test client."""
     test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
-    TestSessionLocal = sessionmaker(bind=test_engine, class_=AsyncSession, expire_on_commit=False)
+    test_session_local = sessionmaker(
+        bind=test_engine, class_=AsyncSession, expire_on_commit=False
+    )
 
     async def override_get_db():
-        async with TestSessionLocal() as session:
+        async with test_session_local() as session:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
 
     app.dependency_overrides.clear()
     await test_engine.dispose()
+
 
 @pytest.mark.asyncio
 async def test_health_check(client: AsyncClient):

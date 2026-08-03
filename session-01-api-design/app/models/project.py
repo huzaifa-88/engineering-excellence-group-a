@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import uuid
 import enum
-from datetime import datetime
-from sqlalchemy import Column, DateTime, String, UUID, Enum, ForeignKey
+import uuid
+
+from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
 
-class ProjectStatus(str, enum.Enum):
+class ProjectStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
     ARCHIVED = "ARCHIVED"
@@ -23,7 +23,9 @@ class Project(Base):
     description = Column(String(1000), nullable=True)
     status = Column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE)
     deadline = Column(DateTime, nullable=True)
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    owner_id = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Relationships
     owner = relationship(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import Field, field_validator, ConfigDict
+from pydantic import ConfigDict, Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
-    
+
     APP_NAME: str = "TaskFlow API"
     ENVIRONMENT: str = Field("development", alias="APP_ENV")
     DB_USER: str = Field(..., alias="POSTGRES_USER")
