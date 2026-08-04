@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, String, UUID, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy import UUID, Column, ForeignKey, PrimaryKeyConstraint, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base

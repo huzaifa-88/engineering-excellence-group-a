@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from app.api.v1.routes.tasks import router as tasks_router
 from app.api.v1.routes.projects import router as projects_router
+from app.api.v1.routes.tasks import router as tasks_router
 from app.api.v1.routes.users import router as users_router
 
 app = FastAPI(

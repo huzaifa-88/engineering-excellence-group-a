@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import uuid
 import enum
-from datetime import datetime
-from sqlalchemy import Column, DateTime, String, UUID, Enum, ForeignKey
+import uuid
+
+from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base

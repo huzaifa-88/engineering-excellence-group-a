@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Annotated, AsyncGenerator
-
-from fastapi import Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from collections.abc import AsyncGenerator
+from typing import Annotated
 
 from app.db.database import get_async_session
+from fastapi import Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

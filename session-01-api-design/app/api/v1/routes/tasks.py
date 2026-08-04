@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response, status
-
 from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.schemas.task import (
     TaskCreate,
@@ -14,6 +12,7 @@ from app.schemas.task import (
     TaskStatusValue,
 )
 from app.services.task_service import TaskService, to_task_response
+from fastapi import APIRouter, Depends, Query, Response, status
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 

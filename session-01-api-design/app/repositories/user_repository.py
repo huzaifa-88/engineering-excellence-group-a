@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from uuid import UUID
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class UserRepository:

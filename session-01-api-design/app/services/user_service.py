@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
     EmailAlreadyExistsError,
@@ -12,12 +11,13 @@ from app.core.exceptions import (
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 def _hash_password(password: str) -> str:
     """Hash password securely using SHA-256 with salt."""
     salt = "taskflow_salt_v1"
-    return hashlib.sha256(f"{password}{salt}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{password}{salt}".encode()).hexdigest()
 
 
 class UserService:
