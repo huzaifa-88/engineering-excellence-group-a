@@ -1,27 +1,35 @@
 repos:
-  - repo: local
+  # Official Ruff hooks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
     hooks:
       - id: ruff
-        name: ruff
-        entry: bash -c "cd session-02-dockerized-development-and-code-review-standards && uv run ruff check --fix"
-        language: system
+        args: [--fix]
         files: ^session-02-dockerized-development-and-code-review-standards/.*\.py$
 
       - id: ruff-format
-        name: ruff-format
-        entry: bash -c "cd session-02-dockerized-development-and-code-review-standards && uv run ruff format"
-        language: system
         files: ^session-02-dockerized-development-and-code-review-standards/.*\.py$
 
+  # Official MyPy hook
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
       - id: mypy
-        name: mypy
-        entry: bash -c "cd session-02-dockerized-development-and-code-review-standards && uv run mypy app"
-        language: system
         pass_filenames: false
-       
+        args:
+          - --config-file=session-02-dockerized-development-and-code-review-standards/pyproject.toml
+          - session-02-dockerized-development-and-code-review-standards/app
+        additional_dependencies:
+          - pydantic
+          - pydantic-settings
+          - sqlalchemy
+          - email-validator
+
+  # Local pytest hook
+  - repo: local
+    hooks:
       - id: pytest
         name: pytest
-        entry: bash -c "cd session-02-dockerized-development-and-code-review-standards && uv run pytest"
+        entry: uv run pytest session-02-dockerized-development-and-code-review-standards/tests
         language: system
         pass_filenames: false
-        
