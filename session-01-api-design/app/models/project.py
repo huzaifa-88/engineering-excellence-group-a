@@ -2,11 +2,18 @@ from __future__ import annotations
 
 import enum
 import uuid
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import UUID, DateTime, Enum, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.project_member import ProjectMember
+    from app.models.task import Task
+    from app.models.user import User
 
 
 class ProjectStatus(enum.StrEnum):
@@ -18,28 +25,32 @@ class ProjectStatus(enum.StrEnum):
 class Project(Base):
     __tablename__ = "project"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    title = Column(String(255), nullable=False)
-    description = Column(String(1000), nullable=True)
-    status = Column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE)
-    deadline = Column(DateTime, nullable=True)
-    owner_id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    status: Mapped[ProjectStatus] = mapped_column(
+        Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE
+    )
+    deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
     # Relationships
-    owner = relationship(
+    owner: Mapped[User] = relationship(
         "User",
         back_populates="owned_projects",
         foreign_keys=[owner_id],
     )
-    tasks = relationship(
+    tasks: Mapped[list[Task]] = relationship(
         "Task",
         back_populates="project",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    members = relationship(
+    members: Mapped[list[ProjectMember]] = relationship(
         "ProjectMember",
         back_populates="project",
         cascade="all, delete-orphan",

@@ -3,11 +3,16 @@ from __future__ import annotations
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import UUID, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.project import Project
+    from app.models.user import User
 
 
 class TaskStatus(enum.StrEnum):
@@ -28,24 +33,32 @@ class TaskPriority(enum.StrEnum):
 class Task(Base):
     __tablename__ = "task"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    project_id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE")
     )
-    assigned_to = Column(
+    assigned_to: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
-    assigned_by = Column(
+    assigned_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
-    title = Column(String(255), nullable=False)
-    description = Column(String(2000), nullable=True)
-    priority = Column(Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM)
-    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.TODO)
-    estimated_time = Column(Integer, nullable=True)  # in hours
-    deadline = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    priority: Mapped[TaskPriority] = mapped_column(
+        Enum(TaskPriority), nullable=False, default=TaskPriority.MEDIUM
+    )
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus), nullable=False, default=TaskStatus.TODO
+    )
+    estimated_time: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         default=datetime.utcnow,
@@ -53,16 +66,17 @@ class Task(Base):
     )
 
     # Relationships
-    project = relationship(
+    project: Mapped[Project] = relationship(
         "Project",
         back_populates="tasks",
     )
-    assigned_to_user = relationship(
+    assigned_to_user: Mapped[User | None] = relationship(
         "User",
         back_populates="assigned_tasks",
         foreign_keys=[assigned_to],
     )
-    created_by_user = relationship(
+
+    created_by_user: Mapped[User | None] = relationship(
         "User",
         back_populates="created_tasks",
         foreign_keys=[assigned_by],

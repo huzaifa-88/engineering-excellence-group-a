@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: bash -c "cd session-01-api-design && uv run ruff check --fix"
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff-format
+        entry: bash -c "cd session-01-api-design && uv run ruff format"
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        entry: bash -c "cd session-01-api-design && uv run mypy app"
+        language: system
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: bash -c "cd session-01-api-design && uv run pytest"
+        language: system
+        pass_filenames: false
