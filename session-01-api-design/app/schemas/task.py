@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import enum
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class TaskStatusValue(enum.StrEnum):
+class TaskStatusValue(str, Enum):
     """API-facing task statuses (lowercase REST values)."""
 
     TODO = "todo"
@@ -15,7 +15,7 @@ class TaskStatusValue(enum.StrEnum):
     DONE = "done"
 
 
-class TaskPriorityValue(enum.StrEnum):
+class TaskPriorityValue(str, Enum):
     """API-facing task priorities (lowercase REST values)."""
 
     LOW = "low"

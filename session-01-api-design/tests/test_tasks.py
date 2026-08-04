@@ -15,20 +15,18 @@ from app.main import app
 async def client():
     """Provide an async HTTP client with DB dependency override."""
     test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
-    test_session_local = sessionmaker(
+    TestSessionLocal = sessionmaker(
         bind=test_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
 
     async def override_get_db():
-        async with test_session_local() as session:
+        async with TestSessionLocal() as session:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
     app.dependency_overrides.clear()

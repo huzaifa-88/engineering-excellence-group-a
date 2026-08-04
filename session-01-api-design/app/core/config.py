@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator, ConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
+    model_config = ConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
-
+    
     APP_NAME: str = "TaskFlow API"
     ENVIRONMENT: str = Field("development", alias="APP_ENV")
     DB_USER: str = Field(..., alias="POSTGRES_USER")

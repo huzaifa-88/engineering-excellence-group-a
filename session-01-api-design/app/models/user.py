@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import uuid
-
-from sqlalchemy import UUID, Column, String
+from sqlalchemy import Column, String, UUID
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base

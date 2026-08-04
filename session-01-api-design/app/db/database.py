@@ -1,18 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
-
-from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
-if settings.DATABASE_URL is None:
-    raise ValueError("DATABASE_URL is not configured")
 
 database_url = settings.DATABASE_URL
 engine: AsyncEngine = create_async_engine(
@@ -21,12 +13,15 @@ engine: AsyncEngine = create_async_engine(
     future=True,
 )
 
-AsyncSessionLocal = async_sessionmaker(
+AsyncSessionLocal = sessionmaker(
     bind=engine,
+    class_=AsyncSession,
     expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
 )
 
 
-async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_async_session() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         yield session

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import UUID, Column, ForeignKey, PrimaryKeyConstraint, String
+from sqlalchemy import Column, String, UUID, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -9,17 +9,13 @@ from app.db.base import Base
 class ProjectMember(Base):
     __tablename__ = "project_member"
 
-    project_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("project.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    user_id = Column(
-        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
-    )
+    project_id = Column(UUID(as_uuid=True), ForeignKey("project.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True)
     member_role = Column(String(50), nullable=False, default="member")
 
-    __table_args__ = (PrimaryKeyConstraint("project_id", "user_id"),)
+    __table_args__ = (
+        PrimaryKeyConstraint("project_id", "user_id"),
+    )
 
     # Relationships
     project = relationship(

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from uuid import UUID
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ProjectNotFoundError
@@ -39,7 +38,7 @@ class ProjectService:
     ) -> tuple[list[Project], int]:
         """Fetch a paginated list of projects with optional filters."""
         offset = (page - 1) * page_size
-
+        status_value = project_status.value if project_status else None
         return await ProjectRepository.get_all(
             db,
             limit=page_size,

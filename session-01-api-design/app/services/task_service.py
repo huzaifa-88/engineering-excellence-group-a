@@ -69,22 +69,22 @@ class TaskService:
             if assignee is None:
                 raise AssigneeNotFoundError()
 
-        # Strip timezone info to match DB column type (TIMESTAMP WITHOUT TIME ZONE)
-        deadline = payload.deadline
-        if deadline is not None and deadline.tzinfo is not None:
-            deadline = deadline.replace(tzinfo=None)
+        data = {
+            "title": payload.title,
+            "description": payload.description,
+            "priority": _PRIORITY_TO_MODEL[payload.priority],
+            "status": _STATUS_TO_MODEL[payload.status],
+            "project_id": payload.project_id,
+            "assigned_to": payload.assignee_id,
+            "estimated_time": payload.estimated_time,
+            "deadline": payload.deadline,
+        }
 
-        return await TaskRepository.create(
-            db,
-            title=payload.title,
-            description=payload.description,
-            priority=_PRIORITY_TO_MODEL[payload.priority],
-            status=_STATUS_TO_MODEL[payload.status],
-            project_id=payload.project_id,
-            assigned_to=payload.assignee_id,
-            estimated_time=payload.estimated_time,
-            deadline=deadline,
-        )
+        # Strip timezone info to match DB column type (TIMESTAMP WITHOUT TIME ZONE)
+        if data.get("deadline") and data["deadline"].tzinfo is not None:
+            data["deadline"] = data["deadline"].replace(tzinfo=None)
+
+        return await TaskRepository.create(db, **data)
 
     @staticmethod
     async def get_tasks(
