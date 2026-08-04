@@ -16,7 +16,7 @@ This session focuses on setting up a professional development workflow with:
 - Python 3.12 or higher
 - Docker and Docker Compose
 - PostgreSQL database (or use Docker)
-- `uv` package manager (recommended) or pip
+- `uv` package manager
 
 ## Quick Start
 
@@ -28,15 +28,9 @@ cd session-02-dockerized-development-and-code-review-standards
 
 ### 2. Install Dependencies
 
-Using uv (recommended):
+Using uv:
 ```bash
 uv sync
-```
-
-Using pip:
-```bash
-pip install -r requirements.txt
-pip install -e .
 ```
 
 ### 3. Configure Environment
@@ -74,6 +68,23 @@ The API will be available at `http://localhost:8000`
 
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+## Common Commands
+
+The following Make commands simplify common development tasks:
+
+```bash
+make install       # Install dependencies
+make hooks         # Install pre-commit hooks
+make lint          # Check lint issues
+make lint-fix      # Fix lint issues automatically
+make format        # Format code using Ruff
+make typecheck     # Run MyPy type checking
+make test          # Run pytest
+make pre-commit    # Run all pre-commit hooks manually
+make run           # Start FastAPI server
+make migrate       # Run database migrations
+```
 
 ## Running Tests
 
@@ -198,7 +209,7 @@ session-02-dockerized-development-and-code-review-standards/
 ├── pyproject.toml                # Project metadata and dependencies
 ├── alembic.ini                   # Alembic configuration
 ├── .env.example                  # Environment variables template
-└── requirements.txt              # pip dependencies (legacy)
+└── Makefile                     # Common development commands
 ```
 
 ## API Endpoints
@@ -248,11 +259,21 @@ This project enforces the following code quality standards:
 
 1. Create a new branch for your feature
 2. Make changes and write tests
-3. Run tests: `uv run pytest`
-4. Run linters: `uv run ruff check . && uv run ruff format .`
-5. Run type checker: `uv run mypy app`
-6. Commit (pre-commit hooks will run automatically)
-7. Push and create a pull request
+3. Run tests:
+
+```bash
+make test
+```
+
+4. Run code quality checks:
+
+```bash
+make lint
+make format
+make typecheck
+```
+5. Commit (pre-commit hooks will run automatically)
+6. Push and create a pull request
 
 ## Troubleshooting
 
