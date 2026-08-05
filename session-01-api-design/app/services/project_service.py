@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ProjectNotFoundError
 from app.models.project import Project, ProjectStatus
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.project import ProjectCreate
 from app.services.user_service import UserService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ProjectService:

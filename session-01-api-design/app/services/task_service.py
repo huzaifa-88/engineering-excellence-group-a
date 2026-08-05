@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import (
     AssigneeNotFoundError,
     ProjectNotFoundError,
@@ -20,6 +18,7 @@ from app.schemas.task import (
     TaskStatusUpdate,
     TaskStatusValue,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # API uses lowercase REST values; DB enums stay UPPERCASE (existing migrations).
 _STATUS_TO_MODEL = {

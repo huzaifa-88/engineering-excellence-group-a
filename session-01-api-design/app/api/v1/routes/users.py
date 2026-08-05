@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response, status
-
 from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.schemas.user import UserCreate, UserListResponse, UserResponse
 from app.services.user_service import UserService
+from fastapi import APIRouter, Depends, Response, status
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

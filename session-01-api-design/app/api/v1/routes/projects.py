@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
-
 from app.api.dependencies.deps import PaginationParams, SessionDep
 from app.models.project import ProjectStatus
 from app.schemas.project import ProjectCreate, ProjectListResponse, ProjectResponse
 from app.services.project_service import ProjectService
+from fastapi import APIRouter, Depends, Query, status
 
 router = APIRouter(
     prefix="/projects",

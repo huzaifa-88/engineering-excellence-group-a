@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
 from uuid import UUID
 
+from app.models.task import Task, TaskPriority, TaskStatus
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.task import Task, TaskPriority, TaskStatus
 
 
 class TaskRepository:
