@@ -1,4 +1,4 @@
-clea.PHONY: install hooks lint lint-fix format typecheck test pre-commit run migrate
+.PHONY: install hooks lint lint-fix format typecheck type-check test pre-commit precommit run migrate quality docker-up docker-down
 
 install:
 	uv sync
@@ -15,13 +15,13 @@ lint-fix:
 format:
 	uv run ruff format .
 
-typecheck:
+type-check:
 	uv run mypy app
 
 test:
 	uv run pytest -v
 
-pre-commit:
+precommit:
 	uv run pre-commit run --all-files
 
 run:
@@ -29,3 +29,15 @@ run:
 
 migrate:
 	uv run alembic upgrade head
+
+quality:
+	uv run ruff check .
+	uv run ruff format --check .
+	uv run mypy app
+	uv run pytest
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
