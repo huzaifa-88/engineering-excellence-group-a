@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 import pytest_asyncio
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,6 +10,15 @@ from sqlalchemy.orm import sessionmaker
 from app.api.dependencies.deps import get_db
 from app.core.config import settings
 from app.main import app
+
+
+def test_root_endpoint():
+    """Test the root endpoint returns a friendly response."""
+    with TestClient(app) as client:
+        response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "TaskFlow API is running"}
 
 
 @pytest_asyncio.fixture

@@ -1,4 +1,4 @@
-clea.PHONY: install hooks lint lint-fix format typecheck test pre-commit run migrate
+.PHONY: install hooks lint lint-fix format typecheck test pre-commit run migrate
 
 install:
 	uv sync
@@ -29,3 +29,21 @@ run:
 
 migrate:
 	uv run alembic upgrade head
+
+docker-build:
+	docker compose build
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f api db
+
+docker-migrate:
+	docker compose exec api uv run alembic upgrade head
+
+docker-test:
+	docker compose exec api uv run pytest -v

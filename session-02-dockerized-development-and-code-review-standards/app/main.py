@@ -15,6 +15,11 @@ app.include_router(tasks_router)
 app.include_router(projects_router)
 
 
+@app.get("/", tags=["health"])
+def root():
+    return {"message": "TaskFlow API is running"}
+
+
 @app.get("/health", tags=["health"])
 def health_check():
     return {"status": "ok"}
