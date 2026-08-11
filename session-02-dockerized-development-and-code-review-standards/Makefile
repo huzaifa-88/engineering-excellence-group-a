@@ -1,4 +1,4 @@
-.PHONY: install hooks lint lint-fix format typecheck type-check test pre-commit precommit run migrate quality docker-up docker-down
+.PHONY: install hooks lint lint-fix format typecheck type-check test pre-commit precommit run migrate quality docker-up docker-down docker-test docker-logs docker-migrate
 
 install:
 	uv sync
@@ -41,3 +41,12 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+docker-test:
+	docker compose --profile test run --rm test
+
+docker-logs:
+	docker compose logs -f api postgres
+
+docker-migrate:
+	docker compose exec api uv run alembic upgrade head
