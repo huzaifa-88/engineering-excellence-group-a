@@ -30,6 +30,6 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: uv run pytest session-02-dockerized-development-and-code-review-standards/tests
+        entry: bash -c "cd session-02-dockerized-development-and-code-review-standards && uv run pytest"
         language: system
         pass_filenames: false
