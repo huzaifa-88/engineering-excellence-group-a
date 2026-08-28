@@ -106,7 +106,7 @@ class TaskService:
             status=_STATUS_TO_MODEL[status] if status else None,
             priority=_PRIORITY_TO_MODEL[priority] if priority else None,
             project_id=project_id,
-            assignee_id=assignee_id,
+            assigned_to=assignee_id,
         )
 
     @staticmethod
