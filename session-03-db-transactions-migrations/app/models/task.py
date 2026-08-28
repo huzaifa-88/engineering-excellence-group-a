@@ -11,7 +11,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.activity_log import ActivityLog
+    from app.models.notification import Notification
     from app.models.project import Project
+    from app.models.task_assignment_history import TaskAssignmentHistory
+    from app.models.task_status_history import TaskStatusHistory
     from app.models.user import User
 
 
@@ -80,6 +84,30 @@ class Task(Base):
         "User",
         back_populates="created_tasks",
         foreign_keys=[assigned_by],
+    )
+    assignment_history: Mapped[list[TaskAssignmentHistory]] = relationship(
+        "TaskAssignmentHistory",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    status_history: Mapped[list[TaskStatusHistory]] = relationship(
+        "TaskStatusHistory",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    activity_logs: Mapped[list[ActivityLog]] = relationship(
+        "ActivityLog",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    notifications: Mapped[list[Notification]] = relationship(
+        "Notification",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     def __repr__(self) -> str:
