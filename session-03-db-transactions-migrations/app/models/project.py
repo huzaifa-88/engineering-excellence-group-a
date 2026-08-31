@@ -22,6 +22,12 @@ class ProjectStatus(enum.StrEnum):
     ARCHIVED = "ARCHIVED"
 
 
+class ProjectPriority(enum.StrEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
 class Project(Base):
     __tablename__ = "project"
 
@@ -31,6 +37,9 @@ class Project(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    priority: Mapped[ProjectPriority] = mapped_column(
+        Enum(ProjectPriority), nullable=False
+    )
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE
     )

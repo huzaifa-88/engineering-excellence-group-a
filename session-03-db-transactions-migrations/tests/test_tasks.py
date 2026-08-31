@@ -52,6 +52,8 @@ async def _create_project(client: AsyncClient, owner_id: str) -> str:
     payload = {
         "title": "Task API Project",
         "description": "Project used for task endpoint tests",
+        "priority": "MEDIUM",
+        "status": "ACTIVE",
         "owner_id": owner_id,
     }
     response = await client.post("/projects", json=payload)

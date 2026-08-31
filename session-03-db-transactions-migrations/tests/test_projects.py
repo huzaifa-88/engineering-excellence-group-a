@@ -51,6 +51,7 @@ async def test_create_project_success(client: AsyncClient):
     payload = {
         "title": "Test Project",
         "description": "A test project description",
+        "priority": "HIGH",
         "status": "ACTIVE",
         "deadline": "2025-12-31T23:59:59",
         "owner_id": owner_id,
@@ -60,6 +61,7 @@ async def test_create_project_success(client: AsyncClient):
     data = response.json()
     assert data["title"] == "Test Project"
     assert data["description"] == "A test project description"
+    assert data["priority"] == "HIGH"
     assert data["status"] == "ACTIVE"
     assert data["owner_id"] == owner_id
     assert "id" in data
@@ -84,6 +86,7 @@ async def test_get_project_by_id_success(client: AsyncClient):
         "/projects",
         json={
             "title": "Get by ID Project",
+            "priority": "MEDIUM",
             "owner_id": owner_id,
         },
     )
@@ -95,6 +98,7 @@ async def test_get_project_by_id_success(client: AsyncClient):
     data = response.json()
     assert data["id"] == project_id
     assert data["title"] == "Get by ID Project"
+    assert data["priority"] == "MEDIUM"
 
 
 @pytest.mark.asyncio

@@ -30,6 +30,24 @@ run:
 migrate:
 	uv run alembic upgrade head
 
+migrate-next:
+	uv run alembic upgrade +1
+
+migrate-previous:
+	uv run alembic downgrade -1
+
+migrate-base:
+	uv run alembic downgrade base
+
+seed:
+	uv run python -m seeds.run
+
+migration-test:
+	uv run alembic downgrade base
+	uv run alembic upgrade +1
+	uv run python -m seeds.run
+	uv run alembic upgrade head
+
 quality:
 	uv run ruff check .
 	uv run ruff format --check .
