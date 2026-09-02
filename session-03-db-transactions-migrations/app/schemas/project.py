@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.project import ProjectStatus
+from app.models.project import ProjectPriority, ProjectStatus
 
 
 class ProjectCreate(BaseModel):
@@ -15,6 +15,7 @@ class ProjectCreate(BaseModel):
     description: str | None = Field(
         default=None, max_length=1000, description="Project description"
     )
+    priority: ProjectPriority
     status: ProjectStatus = Field(default=ProjectStatus.ACTIVE)
     deadline: datetime | None = Field(default=None)
     owner_id: UUID
@@ -28,6 +29,7 @@ class ProjectResponse(BaseModel):
     id: UUID
     title: str
     description: str | None
+    priority: ProjectPriority
     status: ProjectStatus
     deadline: datetime | None
     owner_id: UUID
