@@ -14,7 +14,7 @@ from app.main import app
 @pytest_asyncio.fixture
 async def client():
     """Provide an async HTTP client with DB dependency override."""
-    test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    test_engine = create_async_engine(settings.test_database_url, echo=False)
     test_session_local = sessionmaker(
         bind=test_engine,
         class_=AsyncSession,

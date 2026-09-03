@@ -19,7 +19,7 @@ from app.models.user import User
 @pytest_asyncio.fixture
 async def db_session():
     """Provide an isolated database session for direct SQL and constraint tests."""
-    engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    engine = create_async_engine(settings.test_database_url, echo=False)
     session_factory = sessionmaker(
         bind=engine,
         class_=AsyncSession,

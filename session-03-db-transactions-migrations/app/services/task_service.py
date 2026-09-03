@@ -247,6 +247,8 @@ class TaskService:
         4. Insert ActivityLog (records actor, action, and JSON audit details).
         5. Insert Notification (alerts the new assignee).
 
+        Database write operations are delegated to the Repository layer.
+        The Service layer controls the transaction boundary (commit/rollback).
         If any error occurs or simulate_failure is enabled, the transaction is rolled back,
         ensuring zero partial writes.
         """
@@ -271,52 +273,54 @@ class TaskService:
         status_changed = target_status != prev_status
 
         try:
-            # Step 1: Update task entity
-            task.assigned_to = payload.assignee_id
-            task.assigned_by = payload.assigned_by_id
-            if status_changed:
-                task.status = target_status
-            task.updated_at = now
-            db.add(task)
+            # Step 1: Stage task assignee/status update via Repository
+            TaskRepository.stage_task_assignment(
+                db,
+                task,
+                assignee_id=payload.assignee_id,
+                assigned_by_id=payload.assigned_by_id,
+                new_status=target_status if status_changed else None,
+                now=now,
+            )
 
             if simulate_failure and simulate_failure_step == 1:
                 raise SimulatedAssignmentFailureError(
                     "Simulated failure at Step 1 (Task Update)"
                 )
 
-            # Step 2: Insert assignment history
-            assignment_history = TaskAssignmentHistory(
+            # Step 2: Stage assignment history record via Repository
+            assignment_history = TaskRepository.add_assignment_history(
+                db,
                 task_id=task.id,
                 previous_assignee_id=prev_assignee_id,
                 new_assignee_id=payload.assignee_id,
                 assigned_by_id=payload.assigned_by_id,
                 created_at=now,
             )
-            db.add(assignment_history)
 
             if simulate_failure and simulate_failure_step == 2:
                 raise SimulatedAssignmentFailureError(
                     "Simulated failure at Step 2 (Assignment History)"
                 )
 
-            # Step 3: Insert status history (if status changed)
+            # Step 3: Stage status history record via Repository (if status changed)
             status_history: TaskStatusHistory | None = None
             if status_changed:
-                status_history = TaskStatusHistory(
+                status_history = TaskRepository.add_status_history(
+                    db,
                     task_id=task.id,
                     previous_status=prev_status,
                     new_status=target_status,
                     changed_by_id=payload.assigned_by_id,
                     created_at=now,
                 )
-                db.add(status_history)
 
             if simulate_failure and simulate_failure_step == 3:
                 raise SimulatedAssignmentFailureError(
                     "Simulated failure at Step 3 (Status History)"
                 )
 
-            # Step 4: Insert activity log
+            # Step 4: Stage activity log record via Repository
             activity_details: dict[str, Any] = {
                 "previous_assignee_id": str(prev_assignee_id)
                 if prev_assignee_id
@@ -332,37 +336,36 @@ class TaskService:
                     f"{prev_status.value} -> {target_status.value}"
                 )
 
-            activity_log = ActivityLog(
+            activity_log = TaskRepository.add_activity_log(
+                db,
                 task_id=task.id,
                 actor_id=payload.assigned_by_id,
                 action="task.assigned",
                 details=activity_details,
                 created_at=now,
             )
-            db.add(activity_log)
 
             if simulate_failure and simulate_failure_step == 4:
                 raise SimulatedAssignmentFailureError(
                     "Simulated failure at Step 4 (Activity Log)"
                 )
 
-            # Step 5: Insert notification
-            notification = Notification(
+            # Step 5: Stage notification record via Repository
+            notification = TaskRepository.add_notification(
+                db,
                 recipient_id=payload.assignee_id,
                 task_id=task.id,
                 type="task_assignment",
                 message=f"You have been assigned to task '{task.title}' by {assigned_by_user.name}.",
-                is_read=False,
                 created_at=now,
             )
-            db.add(notification)
 
             if simulate_failure and simulate_failure_step == 5:
                 raise SimulatedAssignmentFailureError(
                     "Simulated failure at Step 5 (Notification Dispatch)"
                 )
 
-            # Atomically commit all records in transaction boundary
+            # Atomically commit all staged records in transaction boundary
             await db.commit()
             await db.refresh(task)
             await db.refresh(assignment_history)

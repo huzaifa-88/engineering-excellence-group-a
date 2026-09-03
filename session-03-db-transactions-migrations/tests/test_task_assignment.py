@@ -20,7 +20,7 @@ from app.models.task_status_history import TaskStatusHistory
 @pytest_asyncio.fixture
 async def test_session():
     """Provide a dedicated async session for direct DB assertions."""
-    engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    engine = create_async_engine(settings.test_database_url, echo=False)
     session_factory = sessionmaker(
         bind=engine,
         class_=AsyncSession,
@@ -34,7 +34,7 @@ async def test_session():
 @pytest_asyncio.fixture
 async def client():
     """Provide an async HTTP client with DB dependency override."""
-    test_engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    test_engine = create_async_engine(settings.test_database_url, echo=False)
     test_session_local = sessionmaker(
         bind=test_engine,
         class_=AsyncSession,

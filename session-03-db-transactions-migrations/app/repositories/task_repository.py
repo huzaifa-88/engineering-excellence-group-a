@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -71,6 +73,121 @@ class TaskRepository:
     ) -> Task:
         """Update status on an existing task (wraps generic update)."""
         return await TaskRepository.update(db, task, status=status)
+
+    # ------------------------------------------------------------------
+    # Write operations for transaction-safe assignment (staged, no commit)
+    # ------------------------------------------------------------------
+    # These methods stage records in the SQLAlchemy session without calling
+    # db.commit(). The calling service is responsible for committing or
+    # rolling back the transaction to maintain the atomic boundary.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def stage_task_assignment(
+        db: AsyncSession,
+        task: Task,
+        *,
+        assignee_id: UUID,
+        assigned_by_id: UUID,
+        new_status: TaskStatus | None,
+        now: datetime,
+    ) -> None:
+        """Stage task assignee/status update in the current session (no commit)."""
+        task.assigned_to = assignee_id
+        task.assigned_by = assigned_by_id
+        if new_status is not None and new_status != task.status:
+            task.status = new_status
+        task.updated_at = now
+        db.add(task)
+
+    @staticmethod
+    def add_assignment_history(
+        db: AsyncSession,
+        *,
+        task_id: UUID,
+        previous_assignee_id: UUID | None,
+        new_assignee_id: UUID,
+        assigned_by_id: UUID,
+        created_at: datetime,
+    ) -> TaskAssignmentHistory:
+        """Stage a new TaskAssignmentHistory record (no commit)."""
+        record = TaskAssignmentHistory(
+            task_id=task_id,
+            previous_assignee_id=previous_assignee_id,
+            new_assignee_id=new_assignee_id,
+            assigned_by_id=assigned_by_id,
+            created_at=created_at,
+        )
+        db.add(record)
+        return record
+
+    @staticmethod
+    def add_status_history(
+        db: AsyncSession,
+        *,
+        task_id: UUID,
+        previous_status: TaskStatus,
+        new_status: TaskStatus,
+        changed_by_id: UUID,
+        created_at: datetime,
+    ) -> TaskStatusHistory:
+        """Stage a new TaskStatusHistory record (no commit)."""
+        record = TaskStatusHistory(
+            task_id=task_id,
+            previous_status=previous_status,
+            new_status=new_status,
+            changed_by_id=changed_by_id,
+            created_at=created_at,
+        )
+        db.add(record)
+        return record
+
+    @staticmethod
+    def add_activity_log(
+        db: AsyncSession,
+        *,
+        task_id: UUID,
+        actor_id: UUID,
+        action: str,
+        details: dict[str, Any] | None = None,
+        created_at: datetime,
+    ) -> ActivityLog:
+        """Stage a new ActivityLog record (no commit)."""
+        record = ActivityLog(
+            task_id=task_id,
+            actor_id=actor_id,
+            action=action,
+            details=details,
+            created_at=created_at,
+        )
+        db.add(record)
+        return record
+
+    @staticmethod
+    def add_notification(
+        db: AsyncSession,
+        *,
+        recipient_id: UUID,
+        task_id: UUID,
+        type: str,
+        message: str,
+        created_at: datetime,
+    ) -> Notification:
+        """Stage a new Notification record (no commit)."""
+        record = Notification(
+            recipient_id=recipient_id,
+            task_id=task_id,
+            type=type,
+            message=message,
+            is_read=False,
+            created_at=created_at,
+        )
+        db.add(record)
+        return record
+
+    # ------------------------------------------------------------------
+    # Read operations for assignment audit trail
+    # ------------------------------------------------------------------
 
     @staticmethod
     async def get_assignment_history(

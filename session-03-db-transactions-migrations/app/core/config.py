@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     DB_PORT: int = Field(5432, alias="POSTGRES_PORT")
     DB_NAME: str = Field(..., alias="POSTGRES_DB")
     DATABASE_URL: str | None = None
+    TEST_DATABASE_URL: str | None = Field(None, alias="TEST_DATABASE_URL")
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
@@ -37,6 +38,11 @@ class Settings(BaseSettings):
             raise ValueError("Missing PostgreSQL database configuration")
 
         return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
+
+    @property
+    def test_database_url(self) -> str:
+        """Return TEST_DATABASE_URL if explicitly configured, otherwise fallback to DATABASE_URL."""
+        return self.TEST_DATABASE_URL or self.DATABASE_URL or ""
 
 
 settings = Settings()
