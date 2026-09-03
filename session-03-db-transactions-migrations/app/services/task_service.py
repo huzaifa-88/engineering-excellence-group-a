@@ -18,6 +18,8 @@ from app.models.notification import Notification
 from app.models.task import Task, TaskPriority, TaskStatus
 from app.models.task_assignment_history import TaskAssignmentHistory
 from app.models.task_status_history import TaskStatusHistory
+from app.repositories.activity_log_repository import ActivityLogRepository
+from app.repositories.notification_repository import NotificationRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.task_repository import TaskRepository
 from app.repositories.user_repository import UserRepository
@@ -336,7 +338,7 @@ class TaskService:
                     f"{prev_status.value} -> {target_status.value}"
                 )
 
-            activity_log = TaskRepository.add_activity_log(
+            activity_log = ActivityLogRepository.stage_create(
                 db,
                 task_id=task.id,
                 actor_id=payload.assigned_by_id,
@@ -350,8 +352,8 @@ class TaskService:
                     "Simulated failure at Step 4 (Activity Log)"
                 )
 
-            # Step 5: Stage notification record via Repository
-            notification = TaskRepository.add_notification(
+            # Step 5: Stage notification record via NotificationRepository
+            notification = NotificationRepository.stage_create(
                 db,
                 recipient_id=payload.assignee_id,
                 task_id=task.id,
@@ -406,7 +408,7 @@ class TaskService:
         if task is None:
             raise TaskNotFoundError()
 
-        return await TaskRepository.get_activity_logs(db, task_id)
+        return await ActivityLogRepository.get_by_task_id(db, task_id)
 
     @staticmethod
     async def get_task_notifications(
@@ -417,4 +419,4 @@ class TaskService:
         if task is None:
             raise TaskNotFoundError()
 
-        return await TaskRepository.get_notifications(db, task_id)
+        return await NotificationRepository.get_by_task_id(db, task_id)

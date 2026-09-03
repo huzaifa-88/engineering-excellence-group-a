@@ -1,21 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.activity_log import ActivityLog
-from app.models.notification import Notification
 from app.models.task import Task, TaskStatus
 from app.models.task_assignment_history import TaskAssignmentHistory
 from app.models.task_status_history import TaskStatusHistory
 
 
 class TaskRepository:
-    """Repository handling database operations for the Task entity."""
+    """Repository handling database operations for Task and task-history entities."""
 
     @staticmethod
     async def get_by_id(db: AsyncSession, task_id: UUID) -> Task | None:
@@ -34,7 +31,6 @@ class TaskRepository:
         """Fetch paginated list of tasks with optional dynamic filters."""
         query = select(Task)
 
-        # Dynamic filtering based on model attributes
         for key, value in filters.items():
             if value is not None and hasattr(Task, key):
                 query = query.where(getattr(Task, key) == value)
@@ -76,10 +72,6 @@ class TaskRepository:
 
     # ------------------------------------------------------------------
     # Write operations for transaction-safe assignment (staged, no commit)
-    # ------------------------------------------------------------------
-    # These methods stage records in the SQLAlchemy session without calling
-    # db.commit(). The calling service is responsible for committing or
-    # rolling back the transaction to maintain the atomic boundary.
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -142,49 +134,6 @@ class TaskRepository:
         db.add(record)
         return record
 
-    @staticmethod
-    def add_activity_log(
-        db: AsyncSession,
-        *,
-        task_id: UUID,
-        actor_id: UUID,
-        action: str,
-        details: dict[str, Any] | None = None,
-        created_at: datetime,
-    ) -> ActivityLog:
-        """Stage a new ActivityLog record (no commit)."""
-        record = ActivityLog(
-            task_id=task_id,
-            actor_id=actor_id,
-            action=action,
-            details=details,
-            created_at=created_at,
-        )
-        db.add(record)
-        return record
-
-    @staticmethod
-    def add_notification(
-        db: AsyncSession,
-        *,
-        recipient_id: UUID,
-        task_id: UUID,
-        type: str,
-        message: str,
-        created_at: datetime,
-    ) -> Notification:
-        """Stage a new Notification record (no commit)."""
-        record = Notification(
-            recipient_id=recipient_id,
-            task_id=task_id,
-            type=type,
-            message=message,
-            is_read=False,
-            created_at=created_at,
-        )
-        db.add(record)
-        return record
-
     # ------------------------------------------------------------------
     # Read operations for assignment audit trail
     # ------------------------------------------------------------------
@@ -211,28 +160,6 @@ class TaskRepository:
             select(TaskStatusHistory)
             .where(TaskStatusHistory.task_id == task_id)
             .order_by(TaskStatusHistory.created_at.desc())
-        )
-        result = await db.execute(stmt)
-        return list(result.scalars().all())
-
-    @staticmethod
-    async def get_activity_logs(db: AsyncSession, task_id: UUID) -> list[ActivityLog]:
-        """Fetch all activity log records for a given task, ordered chronologically."""
-        stmt = (
-            select(ActivityLog)
-            .where(ActivityLog.task_id == task_id)
-            .order_by(ActivityLog.created_at.desc())
-        )
-        result = await db.execute(stmt)
-        return list(result.scalars().all())
-
-    @staticmethod
-    async def get_notifications(db: AsyncSession, task_id: UUID) -> list[Notification]:
-        """Fetch all notifications related to a given task."""
-        stmt = (
-            select(Notification)
-            .where(Notification.task_id == task_id)
-            .order_by(Notification.created_at.desc())
         )
         result = await db.execute(stmt)
         return list(result.scalars().all())
