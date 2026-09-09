@@ -70,6 +70,16 @@ class TaskRepository:
         """Update status on an existing task (wraps generic update)."""
         return await TaskRepository.update(db, task, status=status)
 
+    @staticmethod
+    def stage_update_status(
+        db: AsyncSession,
+        task: Task,
+        status: TaskStatus,
+    ) -> None:
+        """Stage status update on an existing task without committing."""
+        task.status = status
+        db.add(task)
+
     # ------------------------------------------------------------------
     # Write operations for transaction-safe assignment (staged, no commit)
     # ------------------------------------------------------------------

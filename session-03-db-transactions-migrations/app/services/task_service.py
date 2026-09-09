@@ -213,17 +213,61 @@ class TaskService:
         db: AsyncSession,
         task_id: UUID,
         payload: TaskStatusUpdate,
+        changed_by_id: UUID | None = None,
     ) -> Task:
-        """Update only the task status or raise TaskNotFoundError."""
+        """Update task status and atomically record TaskStatusHistory and ActivityLog.
+
+        If changed_by_id is provided or task has assigned_by/assigned_to, the actor is recorded.
+        The operations run within a single transaction boundary to ensure audit trail consistency.
+        """
         task = await TaskRepository.get_by_id(db, task_id)
         if task is None:
             raise TaskNotFoundError()
 
-        return await TaskRepository.update_status(
-            db,
-            task,
-            _STATUS_TO_MODEL[payload.status],
-        )
+        target_status = _STATUS_TO_MODEL[payload.status]
+        prev_status = task.status
+
+        # If status did not change, return early without recording audit history
+        if target_status == prev_status:
+            return task
+
+        now = datetime.now(UTC).replace(tzinfo=None)
+        actor_id = changed_by_id or task.assigned_by or task.assigned_to
+
+        try:
+            # 1. Stage task status update
+            TaskRepository.stage_update_status(db, task, target_status)
+
+            # 2. Record status history if actor is identifiable
+            if actor_id:
+                TaskRepository.add_status_history(
+                    db,
+                    task_id=task.id,
+                    previous_status=prev_status,
+                    new_status=target_status,
+                    changed_by_id=actor_id,
+                    created_at=now,
+                )
+
+                # 3. Record activity log
+                ActivityLogRepository.stage_create(
+                    db,
+                    task_id=task.id,
+                    actor_id=actor_id,
+                    action="task.status_changed",
+                    details={
+                        "previous_status": prev_status.value,
+                        "new_status": target_status.value,
+                    },
+                    created_at=now,
+                )
+
+            await db.commit()
+            await db.refresh(task)
+            return task
+        except Exception:
+            await db.rollback()
+            raise
 
     @staticmethod
     async def assign_task(
